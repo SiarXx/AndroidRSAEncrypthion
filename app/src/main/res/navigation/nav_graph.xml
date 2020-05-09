@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/main_Login">
+
+    <fragment
+        android:id="@+id/main_Login"
+        android:name="com.example.dostepandroid.fragments.LoginFragment"
+        android:label="fragment_main__login"
+        tools:layout="@layout/fragment_main__login" >
+        <action
+            android:id="@+id/action_main_Login_to_RSATestFragment"
+            app:destination="@id/RSATestFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/RSATestFragment"
+        android:name="com.example.dostepandroid.fragments.RSATestFragment"
+        android:label="fragment_r_s_a_test"
+        tools:layout="@layout/fragment_r_s_a_test" />
+</navigation>
