@@ -10,9 +10,7 @@ import android.view.ViewGroup;
 
 import com.example.dostepandroid.R;
 
-/**
- * A simple {@link Fragment} subclass.
- */
+
 public class RSATestFragment extends Fragment {
 
     public RSATestFragment() {

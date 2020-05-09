@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +22,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
 
     private EditText loginfield;
     private EditText passwordfield;
-    AppDatabase db = ((MainActivity)getActivity()).db;
+    AppDatabase db;
     public LoginFragment() {
         // Required empty public constructor
     }
@@ -45,6 +46,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
         loginfield = view.findViewById(R.id.LoginField);
         passwordfield = view.findViewById(R.id.PasswordField);
         LoginBtn.setOnClickListener(this);
+        db = ((MainActivity)getActivity()).db;
         return view;
     }
 
@@ -56,10 +58,10 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
         String password = passwordfield.getText().toString();
         if(db.userDao().getUser(login,password) == null){
             Toast.makeText(getContext(), "Login or Password Incorrect", Toast.LENGTH_SHORT).show();
-            Navigation.findNavController(loginfield).navigate(R.id.action_main_Login_to_RSATestFragment);
         }
         else{
             Toast.makeText(getContext(), "Successfully Logged in", Toast.LENGTH_SHORT).show();
+            NavHostFragment.findNavController(this).navigate(R.id.action_main_Login_to_RSATestFragment);
         }
     }
 }
