@@ -3,6 +3,7 @@ package com.example.dostepandroid.fragments;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,6 +56,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
         String password = passwordfield.getText().toString();
         if(db.userDao().getUser(login,password) == null){
             Toast.makeText(getContext(), "Login or Password Incorrect", Toast.LENGTH_SHORT).show();
+            Navigation.findNavController(loginfield).navigate(R.id.action_main_Login_to_RSATestFragment);
         }
         else{
             Toast.makeText(getContext(), "Successfully Logged in", Toast.LENGTH_SHORT).show();
