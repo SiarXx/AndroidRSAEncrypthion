@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.example.dostepandroid.MainActivity;
 import com.example.dostepandroid.R;
 import com.example.dostepandroid.database.AppDatabase;
+import com.example.dostepandroid.tools.RSA;
 
 
 public class LoginFragment extends Fragment implements View.OnClickListener {
@@ -23,6 +24,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     private EditText loginfield;
     private EditText passwordfield;
     AppDatabase db;
+    RSA rsa = new RSA();
     public LoginFragment() {
         // Required empty public constructor
     }
@@ -55,7 +57,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
 
     private void Login() {
         String login = loginfield.getText().toString();
-        String password = passwordfield.getText().toString();
+        String password = rsa.encryptRSAToString(passwordfield.getText().toString());
         if(db.userDao().getUser(login,password) == null){
             Toast.makeText(getContext(), "Login or Password Incorrect", Toast.LENGTH_SHORT).show();
         }
@@ -64,4 +66,5 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
             NavHostFragment.findNavController(this).navigate(R.id.action_main_Login_to_RSATestFragment);
         }
     }
+
 }

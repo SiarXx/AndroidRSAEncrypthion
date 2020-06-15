@@ -1,39 +1,53 @@
 package com.example.dostepandroid.tools;
 
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyProperties;
 import android.util.Base64;
 
 import java.security.Key;
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.KeySpec;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
 
+///This is Class Short Description
+///
+///This is Class Long Description and more
 public class RSA {
-    KeyPair keyPair;
-    PublicKey publicKey;
-    PrivateKey privateKey;
-    String privateKeyByteBase64;
-    String publicKeyByteBase64;
+
+    private KeyPair keyPair;
+    private PublicKey publicKey;
+    private PrivateKey privateKey;
+    private String alias = "RSAAlias";
+
 
     public RSA() {
-        this.keyPair = getKeyPair();
-        this.privateKey = this.keyPair.getPrivate();
-        this.publicKey = this.keyPair.getPublic();
-        this.privateKeyByteBase64 = getPrivateKeyByteBase64(this.privateKey);
-        this.publicKeyByteBase64 = getPublicKeyByteBase64(this.publicKey);
+        if(RSAKeysExists()){
+            loadKeys();
+            this.keyPair = null;
+        }
+        else{
+           this.keyPair = getKeyPair();
+           loadKeys();
+        }
     }
 
     private KeyPair getKeyPair(){
         KeyPair kp = null;
         try{
-            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-            kpg.initialize(2048);
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA,"AndroidKeyStore");
+            kpg.initialize(new KeyGenParameterSpec.Builder(
+                            alias,
+                            KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+                    .setDigests(KeyProperties.DIGEST_SHA256,KeyProperties.DIGEST_SHA512)
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                    .setRandomizedEncryptionRequired(false)
+                    .setKeySize(2048)
+                    .build()
+            );
             kp = kpg.generateKeyPair();
         }catch (Exception e){
             e.printStackTrace();
@@ -41,25 +55,31 @@ public class RSA {
         return kp;
     }
 
-    private String getPrivateKeyByteBase64(PrivateKey key){
-        byte[] keyBytes = key.getEncoded();
-        String keyByteBase64 = new String(Base64.encode(keyBytes,Base64.DEFAULT));
-        return  keyByteBase64;
+
+    //load keys from keystore and inform if finished successfully
+    private boolean loadKeys(){
+        try {
+            KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
+            ks.load(null);
+            KeyStore.Entry entry = ks.getEntry(alias,null);
+            this.privateKey = ((KeyStore.PrivateKeyEntry)entry).getPrivateKey();
+            this.publicKey = ks.getCertificate(alias).getPublicKey();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
+
     }
-    private String getPublicKeyByteBase64(PublicKey key){
-        byte[] keyBytes = key.getEncoded();
-        String keyByteBase64 = new String(Base64.encode(keyBytes,Base64.DEFAULT));
-        return  keyByteBase64;
-    }
-    public static String encryptRSAToString(String clearText, String publicKey) {
+
+    public String encryptRSAToString(String clearText) {
         String encryptedBase64 = "";
         try {
-            KeyFactory keyFac = KeyFactory.getInstance("RSA");
-            KeySpec keySpec = new X509EncodedKeySpec(Base64.decode(publicKey.trim().getBytes(), Base64.DEFAULT));
-            Key key = keyFac.generatePublic(keySpec);
+            Key key = this.publicKey;
 
             // get an RSA cipher object and print the provider
-            final Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING");
+            final Cipher cipher = Cipher.getInstance("RSA/ECB/NoPadding");
             // encrypt the plain text using the public key
             cipher.init(Cipher.ENCRYPT_MODE, key);
 
@@ -72,18 +92,15 @@ public class RSA {
         return encryptedBase64.replaceAll("(\\r|\\n)", "");
     }
 
-    public static String decryptRSAToString(String encryptedBase64, String privateKey) {
+    public String decryptRSAToString(String encryptedBase64) {
 
         String decryptedString = "";
         try {
-            KeyFactory keyFac = KeyFactory.getInstance("RSA");
-            KeySpec keySpec = new PKCS8EncodedKeySpec(Base64.decode(privateKey.trim().getBytes(), Base64.DEFAULT));
-            Key key = keyFac.generatePrivate(keySpec);
 
             // get an RSA cipher object and print the provider
-            final Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING");
+            final Cipher cipher = Cipher.getInstance("RSA/ECB/NoPadding");
             // encrypt the plain text using the public key
-            cipher.init(Cipher.DECRYPT_MODE, key);
+            cipher.init(Cipher.DECRYPT_MODE, this.privateKey);
 
             byte[] encryptedBytes = Base64.decode(encryptedBase64, Base64.DEFAULT);
             byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
@@ -94,4 +111,16 @@ public class RSA {
 
         return decryptedString;
     }
+    public boolean RSAKeysExists(){
+        KeyStore ks = null;
+        try {
+            ks = KeyStore.getInstance("AndroidKeyStore");
+            ks.load(null);
+            return (ks.containsAlias(alias));
+        } catch (Exception e) {
+            return false;
+        }
+
+    }
+
 }
